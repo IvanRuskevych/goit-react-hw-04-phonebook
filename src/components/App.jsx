@@ -43,7 +43,7 @@ class App extends Component {
     this.setState(() => ({ [name]: e.target.value }));
   };
 
-  addContact = ({ name, number }) => {
+  addContact = (name, number) => {
     if (this.state.contacts.find(contact => contact.name === name)) {
       return alert(`${name} is already in contacts`);
     } else {
