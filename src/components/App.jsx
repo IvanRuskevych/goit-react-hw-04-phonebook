@@ -1,10 +1,12 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { nanoid } from 'nanoid';
 
 import ContactForm from './ContactForm/ContactForm';
 import ContactsList from './ContactsList/ContactsList';
 import Filter from './Filter/Filter';
 import Section from './Section/Section ';
+import { toast } from 'react-toastify';
+import { useLocalStorage } from 'hooks/useLocalStorage';
 
 const initialContacts = [
   { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
@@ -13,39 +15,26 @@ const initialContacts = [
   { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
 ];
 
-class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
+export default function App() {
+  const [contacts, setContacts] = useLocalStorage('contacts', initialContacts);
+  const [filter, setFilter] = useState('');
+
+  const handleChange = e => {
+    setFilter(e.target.value);
   };
 
-  componentDidMount = () => {
-    const localStorageContacts = JSON.parse(localStorage.getItem('contacts'));
-    console.log(localStorageContacts);
-
-    if (localStorageContacts !== null) {
-      return this.setState({ contacts: localStorageContacts });
-    }
-
-    this.setState({ contacts: initialContacts });
-  };
-
-  componentDidUpdate = (prevProps, prevState) => {
-    const prevContacts = prevState.contacts;
-    const nextContacts = this.state.contacts;
-
-    if (prevContacts !== nextContacts) {
-      return localStorage.setItem('contacts', JSON.stringify(nextContacts));
-    }
-  };
-
-  handleChange = name => e => {
-    this.setState(() => ({ [name]: e.target.value }));
-  };
-
-  addContact = (name, number) => {
-    if (this.state.contacts.find(contact => contact.name === name)) {
-      return alert(`${name} is already in contacts`);
+  const addContact = (name, number) => {
+    if (contacts.find(contact => contact.name === name)) {
+      return toast.warn(`${name} is already in contacts`, {
+        position: 'top-center',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
     } else {
       const newContact = {
         id: nanoid(5),
@@ -53,20 +42,15 @@ class App extends Component {
         number,
       };
 
-      this.setState(prevState => ({
-        contacts: [...prevState.contacts, newContact],
-      }));
+      setContacts(prev => [...prev, newContact]);
     }
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const deleteContact = id => {
+    setContacts(prev => prev.filter(contact => contact.id !== id));
   };
 
-  handleFilterContacts = () => {
-    const { filter, contacts } = this.state;
+  const handleFilterContacts = () => {
     const normilizedFilter = filter.toLowerCase().trim();
 
     return contacts.filter(contact =>
@@ -74,22 +58,36 @@ class App extends Component {
     );
   };
 
-  render() {
-    const filteredContacts = this.handleFilterContacts();
-    return (
-      <Section>
-        <h1>Phonebook</h1>
-        <ContactForm addContact={this.addContact} />
+  // const componentDidMount = () => {
+  //   const localStorageContacts = JSON.parse(localStorage.getItem('contacts'));
 
-        <h2>Contacts</h2>
-        <Filter filterValue={this.state.filter} onChange={this.handleChange} />
-        <ContactsList
-          list={filteredContacts}
-          deleteContact={this.deleteContact}
-        />
-      </Section>
-    );
-  }
+  //   if (localStorageContacts !== null) {
+  //     return setContacts(localStorageContacts);
+  //   }
+
+  //   setContacts(initialContacts);
+  // };
+
+  // const componentDidUpdate = (prevProps, prevState) => {
+  //   const prevContacts = prevState.contacts;
+  //   const nextContacts = this.state.contacts;
+
+  //   if (prevContacts !== nextContacts) {
+  //     return localStorage.setItem('contacts', JSON.stringify(nextContacts));
+  //   }
+  // };
+
+  return (
+    <Section>
+      <h1>Phonebook</h1>
+      <ContactForm addContact={addContact} />
+
+      <h2>Contacts</h2>
+      <Filter filter={filter} handleChange={handleChange} />
+      <ContactsList
+        list={handleFilterContacts()}
+        deleteContact={deleteContact}
+      />
+    </Section>
+  );
 }
-
-export default App;
