@@ -1,8 +1,7 @@
-import PropTypes from 'prop-types';
 import TextField from '@mui/material/TextField';
 import css from './Filter.module.css';
 
-function Filter({ filterValue, onChange }) {
+export default function Filter({ filter, handleChange }) {
   return (
     <label className={css.filter}>
       Find contacts by name
@@ -12,15 +11,9 @@ function Filter({ filterValue, onChange }) {
         variant="standard"
         type="text"
         name="filter"
-        value={filterValue}
-        onChange={onChange('filter')}
+        value={filter}
+        onChange={handleChange}
       />
     </label>
   );
 }
-
-Filter.propTypes = {
-  filterValue: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-};
-export default Filter;
